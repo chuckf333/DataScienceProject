@@ -9,7 +9,7 @@ output:
 ##### For this second part of our project, we need to bring in some new data, so that we can have something more to work with while we attempt to seek out some correlating data.  There is certainly a lot to work with, and it could be interesting to see if there are any significant correlations.
 ##### I'm going to start by importing all of the data from the previous part using the "purl" function from the "knitr" library.  We are also going to load a new library, "rvest," which is going to help us scrape and parse some data from a website.
 
-```{r results='hide', message=FALSE, warning=FALSE, include=FALSE}
+```{r part2-packages, results='hide', message=FALSE, warning=FALSE}
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
     install.packages(library_name) 
@@ -29,7 +29,7 @@ include("rvest")
 ##### The way this website is set up, it was somewhat challenging for me as a beginner to come up with a solution to gathering all of the data, as it is all separated onto individual pages by year.  The following code is the best that I could think up.  I set it up as a function so that I could just enter a year, then have it concatenate the year into a full url to use for each year.  Then, I used the "read_html" and "html_nodes" functions from rvest to prep the page for reading.  I went through the HTML code on the website to find out all of the identifiers for each column, and I put them into the "html_nodes" function so that it would store all of that variable's observations into a list.  After a lot of troubleshooting, I realized there was some extra data being read into team_ID, as well as one bit of useless data in each of the other variables, so I set it up to be removed before combining all of them at the end.  I also included a column with the year being recorded.
 
 
-```{r}
+```{r part2-function}
 read_stats <- function(statyear){
   
   url <- paste("https://www.baseball-reference.com/leagues/MLB/", statyear, sep = "")
@@ -217,7 +217,7 @@ read_stats <- function(statyear){
 
 ##### The next part also took quite a bit of troubleshooting, but I did eventually get it to work out.  I've created a variable called "ScrapedBatting" to store the tables in, and one called "chunk" to serve as a temporary home for each new year's data being read in.  As you can see, I had to call the function over and over, for every year.  I did attempt to come up with a loop to make this part much shorter, but it just did not work out.  After each new year is read in, the only way I could come up with to stick it onto the ScrapedBatting table is by using the "rbind" (row bind) function, and to use that I had to tell R to treat the tables as data frames.  It was a little tedious, but in the end it finally worked out.
 
-```{r}
+```{r part2-scraping}
 ScrapedBatting <- read_stats("1985")
 chunk <- read_stats("1986")
 ScrapedBatting <- rbind(as.data.frame(ScrapedBatting), as.data.frame(chunk))
@@ -295,7 +295,7 @@ head(ScrapedBatting)
 
 ##### We did see a strong upward trend in the salaries over the years in the previous part of this project, so maybe there are other factors that follow the same trends.  It may or may not mean anything in reality, though.  It's not a crazy concept to believe that professional baseball players' skills will improve over time, and salaries will likely always be growing as well.  That's not to say that there couldn't be a more specific correlation with some of those skills though, but let's take it easy at first and see what jumps out at us.
 
-```{r warning=FALSE}
+```{r part2-newtable, warning=FALSE}
 
 avgSalByTeam <- (Salaries %>%
   group_by(yearID, teamID) %>%
@@ -313,7 +313,7 @@ head(newTable)
 
 ##### Right away, I can tell that I shouldn't have added the year as a factor.  The values are all over the place, both high and low, and I don't think it really means anything useful to us, so I'm going to remove that.  The runs per game variable is pretty high as well, but we'll see how it changes in the next step.
 
-```{r}
+```{r part2-model1}
 modelcheck <- lm(data=newTable, formula=averageInMillions~Year+Runs_Per_Game+H+R+Double+Triple+HR)
 summary(modelcheck)
 ```
@@ -321,21 +321,21 @@ summary(modelcheck)
 ##### Now we can see that the runs per game is still a really high number, so we can rule it out as having any significant impact on the average salaries.
 ##### Everything else seems to have scored a P-value pretty significantly below 0.05, but they might change again when we remove the runs per game.  The score from the triples is pretty close, so it might be the next to be eliminated.
 
-```{r}
+```{r part2-model2}
 modelcheck <- lm(data=newTable, formula=averageInMillions~Runs_Per_Game+H+R+Double+Triple+HR)
 summary(modelcheck)
 ```
 
 ##### It looks like the P-value from the triples has remained about the same.  I think that with everything as it is here, we can say that there appears to be some correlation between average salaries in baseball and these various batting skills.  The strongest correlation seems to be from doubles.  I couldn't tell you why that might be, but it's right there with home runs.
 
-```{r}
+```{r part2-model3}
 modelcheck <- lm(data=newTable, formula=averageInMillions~H+R+Double+Triple+HR)
 summary(modelcheck)
 ```
 
 ##### If we plot the data from home runs hit and doubles hit compared to the average salary, the end result looks fairly similar.  Both are pretty widely spread out, but still have an obvious direction pointing slightly upwards and to the right.
 
-```{r}
+```{r part2-scatplots}
 
 qplot(averageInMillions , HR, data = newTable, xlab = "Home runs by team", ylab = "Average salary (in millions)") + stat_smooth(method = "lm")
 

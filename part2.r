@@ -1,4 +1,4 @@
-## ----results='hide', message=FALSE, warning=FALSE, include=FALSE---------
+## ----part2-packages, results='hide', message=FALSE, warning=FALSE, include=FALSE----
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
     install.packages(library_name) 
@@ -11,7 +11,7 @@ source("part1.r")
 include("rvest")
 
 
-## ------------------------------------------------------------------------
+## ----part2-function------------------------------------------------------
 read_stats <- function(statyear){
   
   url <- paste("https://www.baseball-reference.com/leagues/MLB/", statyear, sep = "")
@@ -197,7 +197,7 @@ read_stats <- function(statyear){
 }
 
 
-## ------------------------------------------------------------------------
+## ----part2-scraping------------------------------------------------------
 ScrapedBatting <- read_stats("1985")
 chunk <- read_stats("1986")
 ScrapedBatting <- rbind(as.data.frame(ScrapedBatting), as.data.frame(chunk))
@@ -271,7 +271,7 @@ ScrapedBatting <- rbind(as.data.frame(ScrapedBatting), as.data.frame(chunk))
 head(ScrapedBatting)
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----part2-newtable, warning=FALSE---------------------------------------
 
 avgSalByTeam <- (Salaries %>%
   group_by(yearID, teamID) %>%
@@ -285,22 +285,22 @@ newTable <- ScrapedBatting %>%
 head(newTable)
 
 
-## ------------------------------------------------------------------------
+## ----part2-model1--------------------------------------------------------
 modelcheck <- lm(data=newTable, formula=averageInMillions~Year+Runs_Per_Game+H+R+Double+Triple+HR)
 summary(modelcheck)
 
 
-## ------------------------------------------------------------------------
+## ----part2-model2--------------------------------------------------------
 modelcheck <- lm(data=newTable, formula=averageInMillions~Runs_Per_Game+H+R+Double+Triple+HR)
 summary(modelcheck)
 
 
-## ------------------------------------------------------------------------
+## ----part2-model3--------------------------------------------------------
 modelcheck <- lm(data=newTable, formula=averageInMillions~H+R+Double+Triple+HR)
 summary(modelcheck)
 
 
-## ------------------------------------------------------------------------
+## ----part2-scatplots-----------------------------------------------------
 
 qplot(averageInMillions , HR, data = newTable, xlab = "Home runs by team", ylab = "Average salary (in millions)") + stat_smooth(method = "lm")
 

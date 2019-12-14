@@ -6,9 +6,16 @@ output:
     df_print: paged
 ---
 
-```{r results='hide', message=FALSE, warning=FALSE, include=FALSE}
-suppressMessages(install.packages("tidyverse", repos="http://cran.us.r-project.org"))
-suppressMessages(c(library("tidyverse"), library("dplyr"), library("ggplot2")))
+```{r part1-packages, results='hide', message=FALSE, warning=FALSE}
+
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("tidyverse")
+include("dplyr")
+include("ggplot2")
 ```
 
 #### The dataset that I've chosen to work with is one that is comprised of data about baseball players and their batting stats from 1871 through 2018.  It contains 22 variables, an .  I'm also including one that I may use with it in the future which contains information about baseball players' salaries from 1985 through 2018.
@@ -19,14 +26,14 @@ suppressMessages(c(library("tidyverse"), library("dplyr"), library("ggplot2")))
 #### The columns in the Salary dataset are "yearID," "teamID," "lgID," "playerID," and "salary" (how much they earned that year).
 
 ###### *Note: There is some error message that comes up when reading in the Batting csv file, but I don't know what to do about it, and it doesn't seem to affect anything important. 
-```{r results='hide', message=FALSE, warning=FALSE}
+```{r part1-csvload, results='hide', message=FALSE, warning=FALSE}
 suppressMessages(Salaries <- read_csv("https://raw.githubusercontent.com/chadwickbureau/baseballdatabank/master/core/Salaries.csv"))
 suppressMessages(Batting <- read_csv("https://raw.github.com/chadwickbureau/baseballdatabank/master/core/Batting.csv"))
 ```
 
 #### This is what the tables look like now that they're loaded:
 
-```{r results='asis'}
+```{r part1-csvtables, results='asis'}
 head(Salaries)
 head(Batting)
 ```
@@ -35,7 +42,7 @@ head(Batting)
 #### You can see where the "levels" function lists all of the factors from each category.
 #### Besides those variables to be converted, all of the rest are fine being left alone as they already exist.  They can stay as numbers ("doubles") because they aren't categorial variables.
 
-```{r}
+```{r part1-factorassign}
 Batting$yearID <- as.factor(Batting$yearID)
 Batting$playerID <- as.factor(Batting$playerID)
 Batting$teamID <- as.factor(Batting$teamID)
@@ -50,44 +57,44 @@ Salaries$playerID <- as.factor(Salaries$playerID)
 
 ##### These are the years in the Batting table:
 
-```{r}
+```{r part1-batting-yearlevels}
 levels(Batting$yearID)
 ```
 
 ##### These are the years in the Salaries table:
 
-```{r}
+```{r part1-salary-yearlevels}
 levels(Salaries$yearID)
 ```
 
 ##### These are the team IDs in the Batting table:
 
-```{r}
+```{r part1-batting-teamlevels}
 levels(Batting$teamID)
 ```
 
 ##### These are the team IDs in the Salaries table:
 
-```{r}
+```{r part1-salary-teamlevels}
 levels(Salaries$teamID)
 ```
 
 ##### These are the league IDs in the Batting table:
 
-```{r}
+```{r part1-batting-leagues}
 levels(Batting$lgID)
 ```
 
 These are the league IDs in the Salaries table:
 
-```{r}
+```{r part1-salary-leagues}
 levels(Salaries$lgID)
 ```
 
 #### Now that the categorical columns can be divided up as factors, we can play around with some functions.  I thought a good place to start with this data would be to see how the averages of home runs hit have changed over the years, as well as the averages of players' salaries.
 #### I set it so that the average salary amount will be divided by 1,000,000 so that it will be easier to deal with when it comes to graphing the data.
 
-```{r}
+```{r part1-averaging}
 avgHR <- (Batting %>%
   group_by(yearID) %>%
   summarise(average = mean(HR)))
@@ -99,7 +106,7 @@ avgSal <- (Salaries %>%
 
 #### Here is what these new tables look like:
 
-```{r}
+```{r part1-average-tableheads}
 head(avgHR)
 head(avgSal)
 ```
@@ -109,13 +116,13 @@ head(avgSal)
 #### The rise in average home runs is very apparent in this graph.
 #### Unfortunately, the amount of observations in this table make it impossible to read the year labels on the x-axis, but at least in this case it might be easy to assume what's going on.
 
-```{r}
+```{r part1-plot1}
 ggplot(avgHR, aes(x = yearID, y = average)) + geom_jitter() + theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 
 #### Now, we can try the same thing with the average salary data.
 #### It is even more clear here how the averages have risen steadily over the years.
-```{r}
+```{r part1-plot2}
 ggplot(avgSal, aes(x = yearID, y = averageInMillions)) + geom_jitter() + theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 

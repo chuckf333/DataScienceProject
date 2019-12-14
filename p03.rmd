@@ -1,10 +1,12 @@
 ---
 title: 'Data Science Project: Part 3'
 author: "Charles Franklin"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
-```{r results='hide', message=FALSE, warning=FALSE, include=FALSE}
+```{r part3-packages, results='hide', message=FALSE, warning=FALSE}
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
     install.packages(library_name) 
@@ -19,7 +21,7 @@ include("sqldf")
 
 
 
-```{r}
+```{r part3-sql-queries}
 yearsPlayed <- sqldf("SELECT Batting.playerID, COUNT(Batting.yearID) FROM Batting GROUP BY Batting.playerID")
 head(yearsPlayed)
 
