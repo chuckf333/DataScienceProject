@@ -295,7 +295,7 @@ head(ScrapedBatting)
 
 ##### We did see a strong upward trend in the salaries over the years in the previous part of this project, so maybe there are other factors that follow the same trends.  It may or may not mean anything in reality, though.  It's not a crazy concept to believe that professional baseball players' skills will improve over time, and salaries will likely always be growing as well.  That's not to say that there couldn't be a more specific correlation with some of those skills though, but let's take it easy at first and see what jumps out at us.
 
-```{r}
+```{r warning=FALSE}
 
 avgSalByTeam <- (Salaries %>%
   group_by(yearID, teamID) %>%
@@ -336,7 +336,6 @@ summary(modelcheck)
 ##### If we plot the data from home runs hit and doubles hit compared to the average salary, the end result looks fairly similar.  Both are pretty widely spread out, but still have an obvious direction pointing slightly upwards and to the right.
 
 ```{r}
-include("ggplot2")
 
 qplot(averageInMillions , HR, data = newTable, xlab = "Home runs by team", ylab = "Average salary (in millions)") + stat_smooth(method = "lm")
 

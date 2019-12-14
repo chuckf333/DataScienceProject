@@ -271,7 +271,7 @@ ScrapedBatting <- rbind(as.data.frame(ScrapedBatting), as.data.frame(chunk))
 head(ScrapedBatting)
 
 
-## ------------------------------------------------------------------------
+## ----warning=FALSE-------------------------------------------------------
 
 avgSalByTeam <- (Salaries %>%
   group_by(yearID, teamID) %>%
@@ -301,7 +301,6 @@ summary(modelcheck)
 
 
 ## ------------------------------------------------------------------------
-include("ggplot2")
 
 qplot(averageInMillions , HR, data = newTable, xlab = "Home runs by team", ylab = "Average salary (in millions)") + stat_smooth(method = "lm")
 

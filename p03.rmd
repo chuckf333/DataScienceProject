@@ -13,13 +13,13 @@ include <- function(library_name){
 include("knitr")
 purl("p02.rmd", output = "part2.r")
 source("part2.r")
+
+include("sqldf")
 ```
 
 
 
-```{r results='hide', message=FALSE, warning=FALSE, include=FALSE}
-include("sqldf")
-
+```{r}
 yearsPlayed <- sqldf("SELECT Batting.playerID, COUNT(Batting.yearID) FROM Batting GROUP BY Batting.playerID")
 head(yearsPlayed)
 
