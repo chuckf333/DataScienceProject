@@ -1,9 +1,9 @@
-## ------------------------------------------------------------------------
+## ----results='hide', message=FALSE, warning=FALSE, include=FALSE---------
 suppressMessages(install.packages("tidyverse", repos="http://cran.us.r-project.org"))
 suppressMessages(library("tidyverse"))
 
 
-## ------------------------------------------------------------------------
+## ----results='hide', message=FALSE, warning=FALSE------------------------
 suppressMessages(Salaries <- read_csv("https://raw.githubusercontent.com/chadwickbureau/baseballdatabank/master/core/Salaries.csv"))
 suppressMessages(Batting <- read_csv("https://raw.github.com/chadwickbureau/baseballdatabank/master/core/Batting.csv"))
 

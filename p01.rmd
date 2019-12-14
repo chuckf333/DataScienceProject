@@ -6,7 +6,7 @@ output:
     df_print: paged
 ---
 
-```{r}
+```{r results='hide', message=FALSE, warning=FALSE, include=FALSE}
 suppressMessages(install.packages("tidyverse", repos="http://cran.us.r-project.org"))
 suppressMessages(library("tidyverse"))
 ```
@@ -19,7 +19,7 @@ suppressMessages(library("tidyverse"))
 #### The columns in the Salary dataset are "yearID," "teamID," "lgID," "playerID," and "salary" (how much they earned that year).
 
 ###### *Note: There is some error message that comes up when reading in the Batting csv file, but I don't know what to do about it, and it doesn't seem to affect anything important. 
-```{r}
+```{r results='hide', message=FALSE, warning=FALSE}
 suppressMessages(Salaries <- read_csv("https://raw.githubusercontent.com/chadwickbureau/baseballdatabank/master/core/Salaries.csv"))
 suppressMessages(Batting <- read_csv("https://raw.github.com/chadwickbureau/baseballdatabank/master/core/Batting.csv"))
 ```
