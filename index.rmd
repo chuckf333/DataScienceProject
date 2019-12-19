@@ -8,6 +8,6 @@ output:
 
 ## This is my project for the Intro to Data Science course (CSCI 385) at CSU Chico.  My focus will be on analyzing baseball data, and possibly finding any correlating factors.  
 
-### [Here]('p01.html') is the link to part 1.  
-### [Here]('p02.html') is the link to part 2.  
-### [Here]('p03.html') is the link to part 3.
+### [Here](p01.html) is the link to part 1.  
+### [Here](p02.html) is the link to part 2.  
+### [Here](p03.html) is the link to part 3.
