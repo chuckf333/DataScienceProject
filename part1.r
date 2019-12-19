@@ -1,4 +1,4 @@
-## ----part1-packages, results='hide', message=FALSE, warning=FALSE, include=FALSE----
+## ----part1-packages, message=FALSE, warning=FALSE------------------------
 
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
@@ -10,9 +10,9 @@ include("dplyr")
 include("ggplot2")
 
 
-## ----part1-csvload, results='hide', message=FALSE, warning=FALSE---------
-suppressMessages(Salaries <- read_csv("https://raw.githubusercontent.com/chadwickbureau/baseballdatabank/master/core/Salaries.csv"))
-suppressMessages(Batting <- read_csv("https://raw.github.com/chadwickbureau/baseballdatabank/master/core/Batting.csv"))
+## ----part1-csvload, message=FALSE, warning=FALSE-------------------------
+Salaries <- read_csv("https://raw.githubusercontent.com/chadwickbureau/baseballdatabank/master/core/Salaries.csv")
+Batting <- read_csv("https://raw.github.com/chadwickbureau/baseballdatabank/master/core/Batting.csv")
 
 
 ## ----part1-csvtables, results='asis'-------------------------------------
@@ -31,14 +31,6 @@ Salaries$yearID <- as.factor(Salaries$yearID)
 Salaries$teamID <- as.factor(Salaries$teamID)
 Salaries$lgID <- as.factor(Salaries$lgID)
 Salaries$playerID <- as.factor(Salaries$playerID)
-
-
-## ----part1-batting-yearlevels--------------------------------------------
-levels(Batting$yearID)
-
-
-## ----part1-salary-yearlevels---------------------------------------------
-levels(Salaries$yearID)
 
 
 ## ----part1-batting-teamlevels--------------------------------------------

@@ -6,7 +6,7 @@ output:
     df_print: paged
 ---
 
-```{r part1-packages, results='hide', message=FALSE, warning=FALSE}
+```{r part1-packages, message=FALSE, warning=FALSE}
 
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
@@ -18,28 +18,55 @@ include("dplyr")
 include("ggplot2")
 ```
 
-#### The dataset that I've chosen to work with is one that is comprised of data about baseball players and their batting stats from 1871 through 2018.  It contains 22 variables, an .  I'm also including one that I may use with it in the future which contains information about baseball players' salaries from 1985 through 2018.
-#### It comes from the Chadwick Baseball Bureau (http://chadwick-bureau.com/), which is an organization based out of the UK whose goal is to provide, in their own words from their website, "tidy baseball data."  They store all of their datasets on their GitHub account for anybody to use, and everything is cleaned up using common/standard abbreviations for baseball stats (eg. )
+#### The dataset that I've chosen to work with is one that is comprised of data about baseball players and their batting stats from 1871 through 2018.  It contains 22 variables (the categories of recorded statistics/numbers) and 105861 observations (the individual rows of data) .  I'm also including one that I may use with it in the future which contains information about baseball players' salaries from 1985 through 2018.  
+#### It comes from the Chadwick Baseball Bureau (http://chadwick-bureau.com/), which is an organization based out of the UK whose goal is to provide, in their own words from their website, "tidy baseball data."  They store all of their datasets on their GitHub account for anybody to use, and everything is cleaned up (made to be readable and useful) using common/standard abbreviations for baseball stats.
 
-#### The columns in the Batting dataset are made up of "playerID" (a unique identifier for each player), "stint" (the order of appearances in a season) , "yearID" (the year in question), "teamID" (the abbreviation of the team name for each player), "lgID" (the abbreviation for the league of which the team is a member of), "G" (games), "AB" (at bats), "R" (runs), "H" (hits), "2B" (doubles), "3B" (triples), "HR" (home runs), "RBI" (runs batted in), "SB" (stolen bases), "CS" (times caught stealing a base), "BB" (base on balls, or walks), "SO" (times struck out), "IBB" (intentional walks), "HBP" (times hit by a pitch), "SH" (sacrifice hits), "SF" (sacrifice flies), and "GIDP" (times grounded into double plays).
+#### The columns in the Batting dataset are made up of: 
+* "playerID" - a unique identifier for each player
+* "stint" - the order of appearances in a season
+* "yearID" - the year in question
+* "teamID" - the abbreviation of the team name for each player
+* "lgID" - the abbreviation for the league of which the team is a member of
+* "G" - games
+* "AB" - at bats
+* "R" - runs
+* "H" - hits
+* "2B" - doubles
+* "3B" - triples
+* "HR" - home runs
+* "RBI" - runs batted in
+* "SB" - stolen bases
+* "CS" - times caught stealing a base
+* "BB" - base on balls, or walks
+* "SO" - times struck out
+* "IBB" - intentional walks
+* "HBP" - times hit by a pitch
+* "SH" - sacrifice hits
+* "SF" - sacrifice flies
+* "GIDP" - times grounded into double plays
 
-#### The columns in the Salary dataset are "yearID," "teamID," "lgID," "playerID," and "salary" (how much they earned that year).
+#### The columns in the Salary dataset are:
+* "yearID" - the year
+* "teamID" - a 3 character label for which team a player is on
+* "lgID" - a 2 character label for which league the player is in
+* "playerID" - a 9 character unique identifier for each player
+* "salary" - how much they earned that year
 
-###### *Note: There is some error message that comes up when reading in the Batting csv file, but I don't know what to do about it, and it doesn't seem to affect anything important. 
-```{r part1-csvload, results='hide', message=FALSE, warning=FALSE}
-suppressMessages(Salaries <- read_csv("https://raw.githubusercontent.com/chadwickbureau/baseballdatabank/master/core/Salaries.csv"))
-suppressMessages(Batting <- read_csv("https://raw.github.com/chadwickbureau/baseballdatabank/master/core/Batting.csv"))
+#### The "read_csv" function will take the URL of each CSV file and store it into a table for us to use locally.
+```{r part1-csvload, message=FALSE, warning=FALSE}
+Salaries <- read_csv("https://raw.githubusercontent.com/chadwickbureau/baseballdatabank/master/core/Salaries.csv")
+Batting <- read_csv("https://raw.github.com/chadwickbureau/baseballdatabank/master/core/Batting.csv")
 ```
 
-#### This is what the tables look like now that they're loaded:
+#### USing the "head" funtion, we can see a preview of what the tables look like now that they're loaded:
 
 ```{r part1-csvtables, results='asis'}
 head(Salaries)
 head(Batting)
 ```
 
-#### I won't have to clean up any of the column titles because the Chadwick people were nice enough to do that already, but the data in the first four columns would be more useful for organizing or sifting through the data if I convert them into factors.
-#### You can see where the "levels" function lists all of the factors from each category.
+#### I won't have to do any additional work to make any of the column titles less ambiguous because the Chadwick people were nice enough to do that already, but the data in the first four columns would be more useful for organizing or sifting through the data if I convert them into factors.  
+#### You can see where the "levels" function lists all of the factors from each category.  
 #### Besides those variables to be converted, all of the rest are fine being left alone as they already exist.  They can stay as numbers ("doubles") because they aren't categorial variables.
 
 ```{r part1-factorassign}
@@ -53,18 +80,6 @@ Salaries$yearID <- as.factor(Salaries$yearID)
 Salaries$teamID <- as.factor(Salaries$teamID)
 Salaries$lgID <- as.factor(Salaries$lgID)
 Salaries$playerID <- as.factor(Salaries$playerID)
-```
-
-##### These are the years in the Batting table:
-
-```{r part1-batting-yearlevels}
-levels(Batting$yearID)
-```
-
-##### These are the years in the Salaries table:
-
-```{r part1-salary-yearlevels}
-levels(Salaries$yearID)
 ```
 
 ##### These are the team IDs in the Batting table:
@@ -91,7 +106,7 @@ These are the league IDs in the Salaries table:
 levels(Salaries$lgID)
 ```
 
-#### Now that the categorical columns can be divided up as factors, we can play around with some functions.  I thought a good place to start with this data would be to see how the averages of home runs hit have changed over the years, as well as the averages of players' salaries.
+#### Now that the categorical columns can be divided up as factors, we can play around with some functions.  I thought a good place to start with this data would be to see how the averages of home runs hit have changed over the years, as well as the averages of players' salaries.  
 #### I set it so that the average salary amount will be divided by 1,000,000 so that it will be easier to deal with when it comes to graphing the data.
 
 ```{r part1-averaging}
@@ -111,9 +126,8 @@ head(avgHR)
 head(avgSal)
 ```
 
-#### I think that a good way to visualize the averages of these things by year would be a simple scatterplot.  Each value is given a dot, which makes it easy to see how each year's y-value sits in comparison to the other ones.
-
-#### The rise in average home runs is very apparent in this graph.
+#### I think that a good way to visualize the averages of these things by year would be a simple scatterplot.  Each value is given a dot, which makes it easy to see how each year's y-value sits in comparison to the other ones.  
+#### The rise in average home runs is very apparent in this graph.  
 #### Unfortunately, the amount of observations in this table make it impossible to read the year labels on the x-axis, but at least in this case it might be easy to assume what's going on.
 
 ```{r part1-plot1}
@@ -126,5 +140,6 @@ ggplot(avgHR, aes(x = yearID, y = average)) + geom_jitter() + theme(axis.text.x 
 ggplot(avgSal, aes(x = yearID, y = averageInMillions)) + geom_jitter() + theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 
-#### I think that this is a good start for getting into these datasets.  In the future, I could try to see how certain variables might correlate with others, like maybe how a specific player's performance might influence their salary, or I could just observe how a player's skills have fluctuated over the years.
-#### There is probably a lot more I can do with all of this data, but this is all I've been able to think up so far.
+#### I think that this is a good start for getting into these datasets.  In the future, I could try to see how certain variables might correlate with others, like maybe how a specific player's performance might influence their salary, or I could just observe how a player's skills have fluctuated over the years.  
+#### There is probably a lot more I can do with all of this data, but this is all I've been able to think up so far.  
+### [Go to the next part](p02.html)

@@ -6,7 +6,18 @@ output:
     df_print: paged
 ---
 
-```{r part3-packages, results='hide', message=FALSE, warning=FALSE}
+#### Before starting on this next part of the project, it would be good to go back and fix up all of the noted issues from our previous peer review sessions.
+* I made it so that the errors and loading messages don't show up.
+* I made the list of variables and their explanations in the "Batting" table into a bullet list so that it's easier to read.
+* I tried to clean up the x-axis labels for the plot of average homeruns, but I couldn't figure out how, so it's still the same.
+* I fixed some missing text where I was describing the "Batting" data.
+* I changed the wording of some comments about "cleaning" so that it was more obvious what I Was talking about.
+* I got rid of the previews of the lists of years, since I already mentioned at the beginning which years are in which table  
+  
+  
+#### Now we can start this part by bringing in all of the data from the previous parts, like we did in the last one.
+
+```{r part3-packages, message=FALSE, warning=FALSE, results='hide'}
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
     install.packages(library_name) 
@@ -15,19 +26,112 @@ include <- function(library_name){
 include("knitr")
 purl("p02.rmd", output = "part2.r")
 source("part2.r")
+```
 
+#### Next, I want to try sorting the information a different way.  I'm going to include the "sqldf" package.  It provides a way to run SQL queries within R.  SQL is a programming language that is used with handling databases, and it's a little more intuitive for me, so I think it could be good for making new interesting tables or lists.  
+
+```{r part3-sqldf-load, message=FALSE, warning=FALSE, results='hide'}
 include("sqldf")
 ```
 
-
-
+#### The tables I'm going to build from this are:  
+* "yearsPlayed" - includes the player IDs, and a count of how many years they each played professionally
+* "avgHits" - includes the player IDs, the year ID, and the average total hits over their career
+* "avgRBI" - includes the player IDs, the year ID, and the average RBI
+  
+#### The player ID is necessary for combining the tables.  Since it's a unique identifier for each player, we can join them on it so that all of the new stats are in one table together.  I also included one line after they're all joined that will eliminate any rows that contain missing data.  I think there is enough data that anything eliminated probably won't have any significant impact.
 ```{r part3-sql-queries}
-yearsPlayed <- sqldf("SELECT Batting.playerID, COUNT(Batting.yearID) FROM Batting GROUP BY Batting.playerID")
-head(yearsPlayed)
+yearsPlayed <- sqldf("SELECT Batting.playerID, COUNT(DISTINCT Batting.yearID) AS years_played FROM Batting GROUP BY Batting.playerID")
 
-avgHits <- sqldf("SELECT Batting.playerID,Batting.yearID,  AVG(Batting.H) FROM Batting GROUP BY Batting.yearID")
-head(avgHits)
+avgHits <- sqldf("SELECT Batting.playerID,  AVG(Batting.H) AS avgHits FROM Batting GROUP BY Batting.playerID")
 
-avgRBI <- sqldf("SELECT Batting.playerID, Batting.yearID, AVG(Batting.RBI) FROM Batting GROUP BY Batting.yearID")
-head(avgRBI)
+avgRBI <- sqldf("SELECT Batting.playerID, AVG(Batting.RBI) AS avgRBI FROM Batting GROUP BY Batting.playerID")
+
+avgGames <- sqldf("SELECT Batting.playerID, AVG(Batting.G) AS avgGames FROM Batting GROUP BY Batting.playerID")
+
+avgSB <- sqldf("SELECT Batting.playerID, AVG(Batting.SB) AS avgStolenBases FROM Batting GROUP BY Batting.playerID")
+
+playerAvgs <- merge(x=yearsPlayed, y=avgHits, by="playerID")
+playerAvgs <- merge(x=playerAvgs, y=avgGames, by="playerID")
+playerAvgs <- merge(x=playerAvgs, y=avgRBI, by="playerID")
+playerAvgs <- merge(x=playerAvgs, y=avgSB, by="playerID")
+
+#this is to get rid of any rows with incomplete data
+playerAvgs <- playerAvgs[complete.cases(playerAvgs),]
+head(playerAvgs)
 ```
+
+#### Let's try out a model with all of the things we just put together in this new table.
+
+```{r part3-model1}
+model <- lm(data=playerAvgs, formula=years_played~avgHits+avgGames+avgRBI+avgStolenBases)
+summary(model)
+```
+
+#### Everything seems to have a strong correlation with the total years played, except for the stolen bases.  We can just take that out and test it again.
+
+```{r part3-model2}
+model <- lm(data=playerAvgs, formula=years_played~avgGames+avgHits+avgRBI)
+summary(model)
+```
+
+#### This model looks like a good source for correlating data, so now we should look at what the data looks like plotted against the years played.  I think that we'll use the average games played per season and the average hits.
+
+```{r part3-plots}
+qplot(avgGames ,years_played , data = playerAvgs, xlab = "Average # of Games Played Per Season", ylab = "Total years played") + stat_smooth(method = "lm")
+
+qplot(avgHits ,years_played , data = playerAvgs, xlab = "Average # of Hits", ylab = "Total years played") + stat_smooth(method = "lm")
+```
+
+#### The model 
+#### The large hump on the left side of the plot with average hits is interesting.  It doesn't seem to fit with the trend in the rest of the data, so let's take a look at what might be influencing this.  Since a lot of the points on it are so high on the y-axis (total years played), I'll write an SQL query to pull out the players with the top 10 highest amount of years played.  
+
+```{r part3-sql-query-most-years}
+sqldf("SELECT * FROM playerAvgs ORDER BY years_played DESC LIMIT 10")
+```
+
+#### Right away, I can see that there is a huge difference in the numbers of hits, RBIs, and stolen bases.  Some quick Googling reveals the reason though.  The players whose IDs are "ryanno01," "johnto01," "houghch01," "kaatji01," and "moyerja01" are all pitchers!  People who play that position aren't typically used very heavily for their hitting skills, so that large hump is most likely full of pitchers, and we can ignore it as an anomaly.  Unfortunately, none of my current data sources have a list of who played which positions, so I can't include that as a way to narrow down the results.  
+#### When you're dealing with data like this, where there are 18960 individual players being measured against each other, there are going to be a wide variety of differences (hence all of the outlying points), but since we're focusing on the players who specifically hit the balls for their salaries, these plots look like it's data that we can work with.  
+#### Now let's move on to the next step in our project.  We're going to bring in the "caret" package which will help us with model training 
+
+```{r part3-caret, message=FALSE, warning=FALSE, results='hide'}
+include("caret")
+```
+
+#### For this, we will go through a few steps to create and test a predictive model from our data.  We need to partition the table into a set for training and a set for testing.  Then, the training set will be put into a linear regression model, and that will be paired with the test set to create a predictive model.  
+#### Next, we will check out some measurements based on this new model:
+* R2 (R-sqared) "represents the proportion of the variance for a dependent variable that's explained by an independent variable or variables in a regression model" (copied from [investopedia.com](https://www.investopedia.com/terms/r/r-squared.asp)).  The results for this are between 0 and 1, and represent the percentage of how much of the variable can be explained by the model.
+* MAE (mean absolute error) represents a measure of difference between two continuous variables.
+* RMSE (root mean squared error) is the square root of the average of squared errors.
+
+```{r part3-predict}
+samp <- createDataPartition(playerAvgs$years_played, p = 0.70, list = FALSE)
+trainSet <- playerAvgs[samp,]
+testSet <- playerAvgs[-samp,]
+
+predict_years_model <- lm(years_played~avgHits+avgGames, trainSet)
+years_predict <- predict(predict_years_model, testSet)
+
+R2(years_predict, testSet$years_played)
+MAE(years_predict, testSet$years_played)
+RMSE(years_predict, testSet$years_played)
+```
+
+#### If we make a plot graph using the year prediction against the years played in the test set, it looks similar to the oridinal plot graphs, but a little more skewed in the right direction. 
+
+```{r part3-predict-plot}
+ggplot(data=testSet, aes(x=years_predict,y=testSet$years_played )) + geom_point() + stat_smooth(method = "lm")
+```
+
+#### Now we'll test out a train model.
+
+```{r part3-train-model}
+set.seed(123)
+tc <- trainControl(method="cv", number=10)
+trainModel <- train(years_played~avgGames+avgHits,data=trainSet,method="lm",trControl=tc)
+print(trainModel)
+```
+
+#### The results of the RMSE, the R-squared, and the MAE are very close to the previous ones.  
+#### I guess this means that about 40% of the data can be predicted by these models.  That's a lot of predictable observations with regards to how much we're dealing with in this set, but 40% probably isn't that great in general.  
+#### I probably needed to pick some different data still, but there's probably something useful in seeing how long a player stayed playing professional baseball compared to how well they were able to hit over their career.

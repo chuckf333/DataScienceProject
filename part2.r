@@ -1,4 +1,4 @@
-## ----part2-packages, results='hide', message=FALSE, warning=FALSE, include=FALSE----
+## ----part2-packages, message=FALSE, warning=FALSE, results='hide'--------
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
     install.packages(library_name) 

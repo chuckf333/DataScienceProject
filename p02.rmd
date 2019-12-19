@@ -6,10 +6,10 @@ output:
     df_print: paged
 ---
 
-##### For this second part of our project, we need to bring in some new data, so that we can have something more to work with while we attempt to seek out some correlating data.  There is certainly a lot to work with, and it could be interesting to see if there are any significant correlations.
-##### I'm going to start by importing all of the data from the previous part using the "purl" function from the "knitr" library.  We are also going to load a new library, "rvest," which is going to help us scrape and parse some data from a website.
+#### For this second part of our project, we need to bring in some new data, so that we can have something more to work with while we attempt to seek out some correlating data.  There is certainly a lot to work with, and it could be interesting to see if there are any significant correlations.  
+#### I'm going to start by importing all of the data from the previous part using the "purl" function from the "knitr" library.  We are also going to load a new library, "rvest," which is going to help us scrape and parse some data from a website.
 
-```{r part2-packages, results='hide', message=FALSE, warning=FALSE}
+```{r part2-packages, message=FALSE, warning=FALSE, results='hide'}
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
     install.packages(library_name) 
@@ -22,11 +22,11 @@ source("part1.r")
 include("rvest")
 ```
 
-##### The data that we're going to be looking at is going to come from the website "https://www.baseball-reference.com/" and I've decided to pull in all of the batting stats they have available for each year.  I was going to try to use the pitching data, but for some reason it just will not work with my approach (many hours were wasted on this).  The way they have the data set up is at least a little different from my previous data.  The previous batting data set is expanded to each individual player, while this new data is summarized by team.
+#### The data that we're going to be looking at is going to come from the website "https://www.baseball-reference.com/" and I've decided to pull in all of the batting stats they have available for each year.  I was going to try to use the pitching data, but for some reason it just will not work with my approach (many hours were wasted on this).  The way they have the data set up is at least a little different from my previous data.  The previous batting data set is expanded to each individual player, while this new data is summarized by team.  
 
-##### The stats that we're going to pull in are as follows: Batters_Used (number of batters used in games) , Batter_Avg_Age (the average age of the batters used), Runs_Per_Game (runs scored per game), G (number of games played), PA (plate appearances), AB (at bats), R (runs scored), H (hits), 2B (doubles hit), 3B (triples hit), HR (home runs), RBI (runs batted in), SB (stolen bases), CS (times caught stealing bases), BB (walks), SO (strikeouts), TB (total bases), GIDP (double plays grounded into), HBP (times hit by a pitch), SH (sacrifice hits/bunts), SF (sacrifice flies), IBB (intentional walks), LOB (runners left on base)
+#### The stats that we're going to pull in are as follows: Batters_Used (number of batters used in games) , Batter_Avg_Age (the average age of the batters used), Runs_Per_Game (runs scored per game), G (number of games played), PA (plate appearances), AB (at bats), R (runs scored), H (hits), 2B (doubles hit), 3B (triples hit), HR (home runs), RBI (runs batted in), SB (stolen bases), CS (times caught stealing bases), BB (walks), SO (strikeouts), TB (total bases), GIDP (double plays grounded into), HBP (times hit by a pitch), SH (sacrifice hits/bunts), SF (sacrifice flies), IBB (intentional walks), LOB (runners left on base)  
 
-##### The way this website is set up, it was somewhat challenging for me as a beginner to come up with a solution to gathering all of the data, as it is all separated onto individual pages by year.  The following code is the best that I could think up.  I set it up as a function so that I could just enter a year, then have it concatenate the year into a full url to use for each year.  Then, I used the "read_html" and "html_nodes" functions from rvest to prep the page for reading.  I went through the HTML code on the website to find out all of the identifiers for each column, and I put them into the "html_nodes" function so that it would store all of that variable's observations into a list.  After a lot of troubleshooting, I realized there was some extra data being read into team_ID, as well as one bit of useless data in each of the other variables, so I set it up to be removed before combining all of them at the end.  I also included a column with the year being recorded.
+#### The way this website is set up, it was somewhat challenging for me as a beginner to come up with a solution to gathering all of the data, as it is all separated onto individual pages by year.  The following code is the best that I could think up.  I set it up as a function so that I could just enter a year, then have it concatenate the year into a full url to use for each year.  Then, I used the "read_html" and "html_nodes" functions from rvest to prep the page for reading.  I went through the HTML code on the website to find out all of the identifiers for each column, and I put them into the "html_nodes" function so that it would store all of that variable's observations into a list.  After a lot of troubleshooting, I realized there was some extra data being read into team_ID, as well as one bit of useless data in each of the other variables, so I set it up to be removed before combining all of them at the end.  I also included a column with the year being recorded.
 
 
 ```{r part2-function}
@@ -215,7 +215,7 @@ read_stats <- function(statyear){
 }
 ```
 
-##### The next part also took quite a bit of troubleshooting, but I did eventually get it to work out.  I've created a variable called "ScrapedBatting" to store the tables in, and one called "chunk" to serve as a temporary home for each new year's data being read in.  As you can see, I had to call the function over and over, for every year.  I did attempt to come up with a loop to make this part much shorter, but it just did not work out.  After each new year is read in, the only way I could come up with to stick it onto the ScrapedBatting table is by using the "rbind" (row bind) function, and to use that I had to tell R to treat the tables as data frames.  It was a little tedious, but in the end it finally worked out.
+#### The next part also took quite a bit of troubleshooting, but I did eventually get it to work out.  I've created a variable called "ScrapedBatting" to store the tables in, and one called "chunk" to serve as a temporary home for each new year's data being read in.  As you can see, I had to call the function over and over, for every year.  I did attempt to come up with a loop to make this part much shorter, but it just did not work out.  After each new year is read in, the only way I could come up with to stick it onto the ScrapedBatting table is by using the "rbind" (row bind) function, and to use that I had to tell R to treat the tables as data frames.  It was a little tedious, but in the end it finally worked out.
 
 ```{r part2-scraping}
 ScrapedBatting <- read_stats("1985")
@@ -291,9 +291,9 @@ ScrapedBatting <- rbind(as.data.frame(ScrapedBatting), as.data.frame(chunk))
 head(ScrapedBatting)
 ```
 
-##### Now that we have this data, we need to think about what we can possibly do with it.  I'm going to go back to my "Salaries" data set and revisit finding the average salaries, but this time I will have it divided up by both the year and the team.  This way I can join it into my new batting data, and maybe see if I can find any trends.  Unfortunately, some of the data will be lost due to the Salaries table having a wider variety of team names that aren't included in my new batting data.
+#### Now that we have this data, we need to think about what we can possibly do with it.  I'm going to go back to my "Salaries" data set and revisit finding the average salaries, but this time I will have it divided up by both the year and the team.  This way I can join it into my new batting data, and maybe see if I can find any trends.  Unfortunately, some of the data will be lost due to the Salaries table having a wider variety of team names that aren't included in my new batting data.  
 
-##### We did see a strong upward trend in the salaries over the years in the previous part of this project, so maybe there are other factors that follow the same trends.  It may or may not mean anything in reality, though.  It's not a crazy concept to believe that professional baseball players' skills will improve over time, and salaries will likely always be growing as well.  That's not to say that there couldn't be a more specific correlation with some of those skills though, but let's take it easy at first and see what jumps out at us.
+#### We did see a strong upward trend in the salaries over the years in the previous part of this project, so maybe there are other factors that follow the same trends.  It may or may not mean anything in reality, though.  It's not a crazy concept to believe that professional baseball players' skills will improve over time, and salaries will likely always be growing as well.  That's not to say that there couldn't be a more specific correlation with some of those skills though, but let's take it easy at first and see what jumps out at us.
 
 ```{r part2-newtable, warning=FALSE}
 
@@ -309,31 +309,31 @@ newTable <- ScrapedBatting %>%
 head(newTable)
 ```
 
-##### What we're looking for in the following data is in the P-value (the column that says "Pr").  This is something that statisticians use to gauge whether or not things might have a strong correlation.  Typically, if the P-value is above 0.05, it's not considered to have a strong relationship, but if it's below then it does.
+#### What we're looking for in the following data is in the P-value (the column that says "Pr").  This is something that statisticians use to gauge whether or not things might have a strong correlation.  Typically, if the P-value is above 0.05, it's not considered to have a strong relationship, but if it's below then it does.  
 
-##### Right away, I can tell that I shouldn't have added the year as a factor.  The values are all over the place, both high and low, and I don't think it really means anything useful to us, so I'm going to remove that.  The runs per game variable is pretty high as well, but we'll see how it changes in the next step.
+#### Right away, I can tell that I shouldn't have added the year as a factor.  The values are all over the place, both high and low, and I don't think it really means anything useful to us, so I'm going to remove that.  The runs per game variable is pretty high as well, but we'll see how it changes in the next step.
 
 ```{r part2-model1}
 modelcheck <- lm(data=newTable, formula=averageInMillions~Year+Runs_Per_Game+H+R+Double+Triple+HR)
 summary(modelcheck)
 ```
 
-##### Now we can see that the runs per game is still a really high number, so we can rule it out as having any significant impact on the average salaries.
-##### Everything else seems to have scored a P-value pretty significantly below 0.05, but they might change again when we remove the runs per game.  The score from the triples is pretty close, so it might be the next to be eliminated.
+#### Now we can see that the runs per game is still a really high number, so we can rule it out as having any significant impact on the average salaries.  
+#### Everything else seems to have scored a P-value pretty significantly below 0.05, but they might change again when we remove the runs per game.  The score from the triples is pretty close, so it might be the next to be eliminated.
 
 ```{r part2-model2}
 modelcheck <- lm(data=newTable, formula=averageInMillions~Runs_Per_Game+H+R+Double+Triple+HR)
 summary(modelcheck)
 ```
 
-##### It looks like the P-value from the triples has remained about the same.  I think that with everything as it is here, we can say that there appears to be some correlation between average salaries in baseball and these various batting skills.  The strongest correlation seems to be from doubles.  I couldn't tell you why that might be, but it's right there with home runs.
+#### It looks like the P-value from the triples has remained about the same.  I think that with everything as it is here, we can say that there appears to be some correlation between average salaries in baseball and these various batting skills.  The strongest correlation seems to be from doubles.  I couldn't tell you why that might be, but it's right there with home runs.
 
 ```{r part2-model3}
 modelcheck <- lm(data=newTable, formula=averageInMillions~H+R+Double+Triple+HR)
 summary(modelcheck)
 ```
 
-##### If we plot the data from home runs hit and doubles hit compared to the average salary, the end result looks fairly similar.  Both are pretty widely spread out, but still have an obvious direction pointing slightly upwards and to the right.
+#### If we plot the data from home runs hit and doubles hit compared to the average salary, the end result looks fairly similar.  Both are pretty widely spread out, but still have an obvious direction pointing slightly upwards and to the right.
 
 ```{r part2-scatplots}
 
@@ -342,4 +342,5 @@ qplot(averageInMillions , HR, data = newTable, xlab = "Home runs by team", ylab 
 qplot(averageInMillions , Double, data = newTable, xlab = "Doubles hit by team", ylab = "Average salary (in millions)") + stat_smooth(method = "lm")
 ```
 
-##### It can be easy sometimes to take random data and find correlations amongst the variables, but it doesn't necessarily mean that it's significant.  This is however a case where it seems logical to assume that baseball teams with more skilled batters will likely be paying out larger salaries.
+#### It can be easy sometimes to take random data and find correlations amongst the variables, but it doesn't necessarily mean that it's significant.  This is however a case where it seems logical to assume that baseball teams with more skilled batters will likely be paying out larger salaries.  
+### [Go to the next part](p03.html)
